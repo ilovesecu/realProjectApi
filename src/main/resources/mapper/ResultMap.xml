@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ResultMap">
+
+	<!-- 공통 resultMap 설정용 xml -->
+    <resultMap type="Integer" id="integer"/>
+    <resultMap type="java.util.Map" id="map"/>
+    <resultMap type="java.util.HashMap" id="hashMap"/>
+    <resultMap type="java.util.HashMap" id="hashMap2"/>
+    <resultMap type="java.util.HashMap" id="hashMap3"/>
+	<resultMap type="java.util.ArrayList" id="list"/>
+    <resultMap id="string" type="java.lang.String" />
+
+    <resultMap id="mapType1" type="Map"></resultMap>
+    <resultMap id="mapType2" type="Map"></resultMap>
+    <resultMap id="mapType3" type="Map"></resultMap>
+    <resultMap id="mapType4" type="Map"></resultMap>
+    <resultMap id="mapType5" type="Map"></resultMap>
+    <resultMap id="mapType6" type="Map"></resultMap>
+    <resultMap id="mapType7" type="Map"></resultMap>
+    <resultMap id="mapType8" type="Map"></resultMap>
+    <resultMap id="mapType9" type="Map"></resultMap>
+    <resultMap id="mapType10" type="Map"></resultMap>
+
+    <!--    공지사항 -->
+    <!--<resultMap id="CommNotiVO" type="com.inforex.yeoboya_admin.web.totalNotice.vo.CommNotiVO"/>-->
+</mapper>
