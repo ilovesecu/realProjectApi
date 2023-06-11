@@ -41,7 +41,13 @@ public class FileService {
             return filesUploadRsp;
         }
 
+        //파일 업로드 폴더
 
+        
+        filesUploadRsp.setTotalCount(imageFiles.length);
+        for(MultipartFile imageFile : imageFiles){
+            //임시 저장 여부
+        }
 
         this.uploadFile();
         return filesUploadRsp;
