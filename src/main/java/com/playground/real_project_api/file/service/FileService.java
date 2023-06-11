@@ -21,8 +21,9 @@ import java.util.Map;
 @Slf4j
 @RequiredArgsConstructor
 public class FileService {
+    public static final int RANDOM_STRING_LENGTH = 5; //주의:함부로 바꾸면 이전 파일 이름 체계가 엉망
     private final RealProjectMapper realProjectMapper;
-
+    
     /**********************************************************************************************
      * @Method 설명 : 이미지 파일 업로드
      * @작성일 : 2023-06-09

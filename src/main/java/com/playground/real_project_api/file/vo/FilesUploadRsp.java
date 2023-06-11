@@ -19,7 +19,7 @@ public class FilesUploadRsp {
     private int totalCount = 0; //총 업로드 수
 
     private int code; //해당 요청의 성공/실패 코드
-    private String message = MsgDescription.SUCEESS.getDescription(); //업로드 성공 여부 메시지
+    private String message = MsgDescription.SUCEESS.getMessage(); //업로드 성공 여부 메시지
     private List<FileUploadResult> fileUploadResultList = new ArrayList<>();
     
     public void addFileUploadResult(FileUploadResult fileUploadResult){
