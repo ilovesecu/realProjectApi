@@ -1,5 +1,6 @@
 package com.playground.real_project_api.file.vo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 /**********************************************************************************************
@@ -11,6 +12,14 @@ import lombok.Data;
 @Data
 public class FileUploadResult {
     private int code;
-    private String rtnResult;
+    private String resultVal;
+    private String message; // (Optional)
 
+    private String encFileName;
+    private String blurEncFileName;
+    private String blur = "0";    // 0:blur이미지 미생성
+    private String resize = "0";  //1 : 채팅용 또는 썸네일용 리사이즈 제작
+    private String temp = "0";
+    @JsonIgnore
+    private String fileFullPath;
 }

@@ -1,4 +1,4 @@
-package com.playground.real_project_api.commons.val;
+package com.playground.real_project_api.file.val;
 
 public enum RtnResult {
     SUCCESS("success", 1, "업로드 성공"),
