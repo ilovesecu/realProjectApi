@@ -1,7 +1,7 @@
 package com.playground.real_project_api.file.val;
 
 public enum SubType {
-    EDITOR("editor"),
+    EDITOR_IMAGE("editor_image"),
     AUDIO("audio"),
     IMAGE("image"),
     VIDEO("video"),

@@ -27,7 +27,7 @@ public class FileController {
         fileUploadParam.setClientIP(request.getRemoteAddr()); //IP 수집
 
         if(subType.equals(SubType.IMAGE.getName())){
-
+            fileService.uploadImage(type, SubType.IMAGE, fileUploadParam);
         }
 
         return null;

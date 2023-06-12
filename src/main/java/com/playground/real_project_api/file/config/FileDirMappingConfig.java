@@ -34,7 +34,7 @@ public class FileDirMappingConfig {
         FILE_UPDOWN_LIST = Arrays.asList("project_meme","");
     }
     //Type에 해당하는 폴더명을 반환
-    public static String get(String type){return FILE_TYPE_MAPPING.get(type);}
+    public static String getDir(String type){return FILE_TYPE_MAPPING.get(type);}
 
 
 }
