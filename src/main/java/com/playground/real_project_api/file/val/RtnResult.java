@@ -4,7 +4,7 @@ package com.playground.real_project_api.file.val;
  * @FileName : RtnResult.java 
  * @Date : 2023-06-12 
  * @작성자 : 정승주 
- * @설명 :
+ * @설명 : 업로드 파일 하나하나에 대한 메시지
  **********************************************************************************************/ 
 public enum RtnResult {
     SUCCESS("success", 2001, "업로드 성공"),

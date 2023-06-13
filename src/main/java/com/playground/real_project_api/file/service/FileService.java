@@ -5,10 +5,7 @@ import com.playground.real_project_api.file.config.FileDirMappingConfig;
 import com.playground.real_project_api.file.val.MsgDescription;
 import com.playground.real_project_api.file.val.RtnResult;
 import com.playground.real_project_api.file.val.SubType;
-import com.playground.real_project_api.file.vo.FileExtensionChkRes;
-import com.playground.real_project_api.file.vo.FileUploadParam;
-import com.playground.real_project_api.file.vo.FileUploadResult;
-import com.playground.real_project_api.file.vo.FilesUploadRsp;
+import com.playground.real_project_api.file.vo.*;
 import com.playground.real_project_api.proc.RealProjectMapper;
 import com.playground.real_project_api.utils.EncryptionHelper;
 import com.playground.real_project_api.utils.file.FileHelper;
@@ -28,6 +25,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -47,26 +45,34 @@ public class FileService {
      * @작성자 : 정승주
      * @변경이력 :
      **********************************************************************************************/
-    public FilesUploadRsp uploadImage(String type, SubType subType, FileUploadParam fileUploadParam){
-        int memNo = fileUploadParam.getMemNo();
+    public FilesUploadRsp uploadImage(String type, SubType subType, FileUploadBaseParam fileUploadBaseParam){
+        int memNo = fileUploadBaseParam.getMemNo();
         FilesUploadRsp filesUploadRsp = new FilesUploadRsp();
+        List<FileUploadParam> fileUploadParams = fileUploadBaseParam.getFileUploadParams();
 
-        MultipartFile[] imageFiles = fileUploadParam.getFiles();
-        //File 예외처리 - custom validate 써보기
-        if(imageFiles == null || imageFiles.length ==0){
+        if(fileUploadParams == null || fileUploadParams.size()==0){
             filesUploadRsp.setCode(RtnResult.DENIED_PARAM.getCode());
             filesUploadRsp.setMessage(MsgDescription.PARAM_NOT_FOUND.getMessage());
             return filesUploadRsp;
         }
+
         //파일 업로드 폴더
         Map<String,String>dateMap = this.getDateMap();
 
-        filesUploadRsp.setTotalCount(imageFiles.length);
-        for(MultipartFile imageFile : imageFiles){
+        filesUploadRsp.setTotalCount(fileUploadParams.size());
+        for(FileUploadParam fileUploadParam : fileUploadParams){
             try{
+                MultipartFile imageFile = fileUploadParam.getFile();
                 FileUploadResult fileUploadResult = new FileUploadResult();
-                String originFileName = imageFile.getOriginalFilename(); //사용자가 업로드한 원본 이름
 
+                //File 예외처리 - custom validate 써보기
+                if(imageFile == null){
+                    fileUploadResult.setCode(RtnResult.DENIED_PARAM.getCode());
+                    fileUploadResult.setMessage(MsgDescription.PARAM_NOT_FOUND.getMessage());
+                    return filesUploadRsp;
+                }
+
+                String originFileName = imageFile.getOriginalFilename(); //사용자가 업로드한 원본 이름
                 //확장자 확인(사용자가 업로드한 그대로)
                 String[] splitFileName = originFileName.split("\\.");
                 String extFileName = "jpg";
@@ -86,7 +92,6 @@ public class FileService {
                 }
                 //임시 저장 여부
                 String tempDir = "";
-                if()
 
                 //서버 저장 파일명
                 String resultDecimal = RandomStringGenerator.getRandomStringDigit(RANDOM_STRING_LENGTH);
