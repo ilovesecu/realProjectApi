@@ -105,7 +105,6 @@ public class FileService {
                 //암호화
                 String encFileName = EncryptionHelper.encryptAES256(serverFileName);
                 //원본파일 업로드
-
                 this.uploadFile(upDir,serverFileName, imageFile.getInputStream());
             }catch (Exception e){
 
@@ -128,7 +127,7 @@ public class FileService {
             Path uploadFileUllPath = Paths.get(uploadDirFullPath + File.separator + StringUtils.cleanPath(fileName));
             Files.copy(inputStream, uploadFileUllPath, StandardCopyOption.REPLACE_EXISTING); //파일 복사(업로드), REPLACE_EXISTING : 같은 파일명이 존재하면 덮어쓰기
         }catch (Exception e){
-
+            log.error("uploadFile fail ==> uploadDir:{}, filename:{} e:",uploadDir,fileName);
         }finally {
             inputStream.close();
         }

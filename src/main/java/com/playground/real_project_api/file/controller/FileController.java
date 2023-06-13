@@ -46,7 +46,7 @@ public class FileController {
      * 요청 FORM 예시 - @RequestBody 지우는거 잊지말자.
      * memNo:1
      * fileUploadParams[0].temp = "1"
-     * fileUploadParams[0].files = multipart/file (binary 데이터)
+     * fileUploadParams[0].file = multipart/file (binary 데이터)
      * ...
      * =========================================
      *
