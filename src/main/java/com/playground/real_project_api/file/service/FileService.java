@@ -58,8 +58,9 @@ public class FileService {
 
         //파일 업로드 폴더
         Map<String,String>dateMap = this.getDateMap();
-
         filesUploadRsp.setTotalCount(fileUploadParams.size());
+        String upDir = this.makeDirWithDate(dateMap, type); //업로드 경로
+
         for(FileUploadParam fileUploadParam : fileUploadParams){
             try{
                 MultipartFile imageFile = fileUploadParam.getFile();
@@ -92,6 +93,11 @@ public class FileService {
                 }
                 //임시 저장 여부
                 String tempDir = "";
+                if("1".equals(fileUploadParam.getTemp())){
+                    tempDir = FileDirMappingConfig.getDir("temp");
+                }
+                upDir = upDir.replace("${temp}", tempDir+File.separator);
+                System.out.println(upDir);
 
                 //서버 저장 파일명
                 String resultDecimal = RandomStringGenerator.getRandomStringDigit(RANDOM_STRING_LENGTH);
@@ -99,7 +105,7 @@ public class FileService {
                 //암호화
                 String encFileName = EncryptionHelper.encryptAES256(serverFileName);
                 //원본파일 업로드
-                String upDir = uploadRootDir + File.separator + FileDirMappingConfig.getDir(type); //업로드 경로
+
                 this.uploadFile(upDir,serverFileName, imageFile.getInputStream());
             }catch (Exception e){
 
@@ -126,6 +132,20 @@ public class FileService {
         }finally {
             inputStream.close();
         }
+    }
+
+    /**********************************************************************************************
+     * @Method 설명 : 업로드 경로 (시간 디렉토리)
+     * @작성일 : 2023-06-13
+     * @작성자 : 정승주
+     * @변경이력 : 임시저장 인지는 반복문에서 결정되므로 ${temp}로 설정해두고 반복문 안에서 최종적으로 replace 하도록 한다.
+     **********************************************************************************************/
+    private String makeDirWithDate(Map<String,String>dateMap, String type){
+        return uploadRootDir + File.separator + "${temp}" + FileDirMappingConfig.getDir(type)
+                + File.separator + dateMap.get("yyyy")
+                + File.separator + dateMap.get("MM")
+                + File.separator + dateMap.get("dd")
+                + File.separator + dateMap.get("hhVal");
     }
 
 
