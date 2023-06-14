@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,7 +60,7 @@ public class FileService {
         //파일 업로드 폴더
         Map<String,String>dateMap = this.getDateMap();
         filesUploadRsp.setTotalCount(fileUploadParams.size());
-        String upDir = this.makeDirWithDate(dateMap, type); //업로드 경로
+        String upDir = this.makeDirWithDate(dateMap, type); //업로드 경로 -> \home\storage\${temp}\project_meme\2023\06\13\0~2
 
         for(FileUploadParam fileUploadParam : fileUploadParams){
             try{
@@ -96,16 +97,33 @@ public class FileService {
                 if("1".equals(fileUploadParam.getTemp())){
                     tempDir = FileDirMappingConfig.getDir("temp");
                 }
-                upDir = upDir.replace("${temp}", tempDir+File.separator);
-                System.out.println(upDir);
+                upDir = upDir.replace("${temp}", tempDir+File.separator); // \home\storage\project_tmp\project_meme\2023\06\13\0~2 or \home\storage\project_meme\2023\06\13\0~2
 
                 //서버 저장 파일명
                 String resultDecimal = RandomStringGenerator.getRandomStringDigit(RANDOM_STRING_LENGTH);
                 String serverFileName = this.getNewFileName(memNo, dateMap, fileExtensionChkRes.getExtType(), resultDecimal, type);
                 //암호화
                 String encFileName = EncryptionHelper.encryptAES256(serverFileName);
+                String errMessage = "";
                 //원본파일 업로드
-                this.uploadFile(upDir,serverFileName, imageFile.getInputStream());
+                boolean uploadResult = this.uploadFile(upDir,serverFileName, imageFile.getInputStream(), errMessage);
+                if(uploadResult && fileUploadParam.getResize().equals("1")){ 
+                    //리사이즈 제작
+                    
+                }
+
+
+                if(uploadResult){
+                    fileUploadResult.setFileFullPath(upDir+File.separator+serverFileName);
+                    fileUploadResult.setEncFileName(encFileName);
+                    fileUploadResult.setResultVal(RtnResult.SUCCESS.getResult());
+                    fileUploadResult.setCode(RtnResult.SUCCESS.getCode());
+                }else{
+                    fileUploadResult.setResultVal(RtnResult.FAIL.getResult());
+                    fileUploadResult.setCode(RtnResult.FAIL.getCode());
+                    fileUploadResult.setMessage(errMessage);
+                }
+
             }catch (Exception e){
 
             }
@@ -120,18 +138,38 @@ public class FileService {
      * @작성자 : 정승주
      * @변경이력 :
      **********************************************************************************************/
-    public void uploadFile(String uploadDir, String fileName, InputStream inputStream) throws IOException {
+    public boolean uploadFile(String uploadDir, String fileName, InputStream inputStream, String errMessage) throws IOException {
+        boolean uploadResult = true;
         try{
             Path uploadDirFullPath = Paths.get(uploadDir);
             if(!Files.exists(uploadDirFullPath, LinkOption.NOFOLLOW_LINKS)) Files.createDirectories(uploadDirFullPath); //NOFOLLOW_LINKS : 심볼릭 링크는 따라가지 않는다.
-            Path uploadFileUllPath = Paths.get(uploadDirFullPath + File.separator + StringUtils.cleanPath(fileName));
-            Files.copy(inputStream, uploadFileUllPath, StandardCopyOption.REPLACE_EXISTING); //파일 복사(업로드), REPLACE_EXISTING : 같은 파일명이 존재하면 덮어쓰기
+            Path uploadFileFullPath = Paths.get(uploadDirFullPath + File.separator + StringUtils.cleanPath(fileName));
+            long read = Files.copy(inputStream, uploadFileFullPath, StandardCopyOption.REPLACE_EXISTING); //파일 복사(업로드), REPLACE_EXISTING : 같은 파일명이 존재하면 덮어쓰기
+            File file = uploadFileFullPath.toFile();
+            uploadResult = file.exists() && file.length() == read;
+            if(!uploadResult){
+                log.error("uploadFile fail ==> 업로드가 정상적으로 이루어지지 않았습니다. (업로드된 파일이 존재하지 않거나, 파일 용량이 맞지않습니다.)");
+            }
         }catch (Exception e){
             log.error("uploadFile fail ==> uploadDir:{}, filename:{} e:",uploadDir,fileName);
+            uploadResult = false;
         }finally {
             inputStream.close();
         }
+        if(!uploadResult) errMessage = "원본 파일 업로드 실패";
+        return uploadResult;
     }
+    
+    /********************************************************************************************** 
+     * @Method 설명 : 리사이즈 제작
+     * @작성일 : 2023-06-14 
+     * @작성자 : 정승주
+     * @변경이력 : 
+     **********************************************************************************************/
+    private void resizeImage(String originFullPath, String originFileName, int dstW, int dstH){
+
+    }
+
 
     /**********************************************************************************************
      * @Method 설명 : 업로드 경로 (시간 디렉토리)
