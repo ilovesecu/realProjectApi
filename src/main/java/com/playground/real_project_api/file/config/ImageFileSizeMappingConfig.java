@@ -26,9 +26,9 @@ public class ImageFileSizeMappingConfig {
      * @작성자 : 정승주
      * @변경이력 :
      **********************************************************************************************/
-    public static Map<String,Integer> getSizeMap(ServiceType serviceType){
-        switch (serviceType){
-            case PROJECT_MEME:
+    public static Map<String,Integer> getSizeMap(String type){
+        switch (type){
+            case "meme":
                 return projectMemeSizeMap;
             default:
                 return null;

@@ -2,6 +2,7 @@ package com.playground.real_project_api.file.service;
 
 import com.playground.real_project_api.commons.val.ServiceType;
 import com.playground.real_project_api.file.config.FileDirMappingConfig;
+import com.playground.real_project_api.file.config.ImageFileSizeMappingConfig;
 import com.playground.real_project_api.file.val.MsgDescription;
 import com.playground.real_project_api.file.val.RtnResult;
 import com.playground.real_project_api.file.val.SubType;
@@ -17,6 +18,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -109,9 +113,15 @@ public class FileService {
                 boolean uploadResult = this.uploadFile(upDir,serverFileName, imageFile.getInputStream(), errMessage);
                 if(uploadResult && fileUploadParam.getResize().equals("1")){ 
                     //리사이즈 제작
-                    
+                    Map<String,Integer> sizeMap = ImageFileSizeMappingConfig.getSizeMap(type);
+                    //이미지 읽기
+                    BufferedImage inputImage = ImageIO.read(imageFile.getInputStream());
+                    for (Map.Entry<String, Integer> entry : sizeMap.entrySet()) {
+                        String key = entry.getKey();
+                        Integer value = entry.getValue();
+                        this.resizeImage(upDir, serverFileName, inputImage, key,value,value);
+                    }
                 }
-
 
                 if(uploadResult){
                     fileUploadResult.setFileFullPath(upDir+File.separator+serverFileName);
@@ -125,7 +135,7 @@ public class FileService {
                 }
 
             }catch (Exception e){
-
+                e.printStackTrace();
             }
 
         }
@@ -164,10 +174,21 @@ public class FileService {
      * @Method 설명 : 리사이즈 제작
      * @작성일 : 2023-06-14 
      * @작성자 : 정승주
-     * @변경이력 : 
+     * @변경이력 : 성능이 좀 느림.. 읽는 부분은 공통부분이니까 최적화는 가능할듯 -> 스케일링할 떄 Graphics2D말고.. Thumbnails.of 로해볼까?
      **********************************************************************************************/
-    private void resizeImage(String originFullPath, String originFileName, int dstW, int dstH){
+    private void resizeImage(String uploadDir, String serverFileName, BufferedImage inputImage, String sizeCodeName, int dstW, int dstH) throws IOException {
+        Image scaledImage = inputImage.getScaledInstance(dstW, dstH, Image.SCALE_SMOOTH);
+        //이미지 저장용 객체 만들기
+        BufferedImage outputImage = new BufferedImage(dstW, dstH, BufferedImage.TYPE_INT_RGB);
+        //지정된 크기로 스케일링 및 그리기
+        Graphics2D graphics2D = outputImage.createGraphics();
+        graphics2D.drawImage(scaledImage, 0, 0, null);
+        graphics2D.dispose();
 
+        String[] splitted=serverFileName.split("\\.");
+        String resizeName = splitted[0]+"_"+sizeCodeName+"."+splitted[1];
+        File outputFile = new File(uploadDir,resizeName);
+        ImageIO.write(outputImage, "PNG",outputFile);
     }
 
 
