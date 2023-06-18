@@ -111,16 +111,20 @@ public class FileService {
                 String errMessage = "";
                 //원본파일 업로드
                 boolean uploadResult = this.uploadFile(upDir,serverFileName, imageFile.getInputStream(), errMessage);
-                if(uploadResult && fileUploadParam.getResize().equals("1")){ 
-                    //리사이즈 제작
+                //이미지 읽기
+                BufferedImage inputImage = ImageIO.read(imageFile.getInputStream());
+                //리사이즈 제작
+                if(uploadResult && fileUploadParam.getResize().equals("1")){
                     Map<String,Integer> sizeMap = ImageFileSizeMappingConfig.getSizeMap(type);
-                    //이미지 읽기
-                    BufferedImage inputImage = ImageIO.read(imageFile.getInputStream());
                     for (Map.Entry<String, Integer> entry : sizeMap.entrySet()) {
                         String key = entry.getKey();
                         Integer value = entry.getValue();
                         this.resizeImage(upDir, serverFileName, inputImage, key,value,value);
                     }
+                }
+                //블러 이미지 제작
+                if(uploadResult && fileUploadParam.getBlur().equals("1")){
+                    
                 }
 
                 if(uploadResult){
@@ -190,7 +194,16 @@ public class FileService {
         File outputFile = new File(uploadDir,resizeName);
         ImageIO.write(outputImage, "PNG",outputFile);
     }
+    
+    /********************************************************************************************** 
+     * @Method 설명 : 블러 이미지 제작
+     * @작성일 : 2023-06-18 
+     * @작성자 : 정승주
+     * @변경이력 : 
+     **********************************************************************************************/
+    private void blurImage(String uploadDir, String serverFileName, BufferedImage inputImage){
 
+    }
 
     /**********************************************************************************************
      * @Method 설명 : 업로드 경로 (시간 디렉토리)
