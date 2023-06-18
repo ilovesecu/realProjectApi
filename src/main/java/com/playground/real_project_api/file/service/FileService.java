@@ -21,6 +21,9 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.BufferedImageOp;
+import java.awt.image.ConvolveOp;
+import java.awt.image.Kernel;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -41,6 +44,7 @@ public class FileService {
     private String uploadRootDir;
 
     public static final int RANDOM_STRING_LENGTH = 5; //주의:함부로 바꾸면 이전 파일 이름 체계가 엉망
+    public static final String BLUR_ADD_NAME = "_blur"; //블러 이미지에 해당 이미지가 블러라는 것을 알려주는 표식
     private final RealProjectMapper realProjectMapper;
     private final FileHelper fileHelper;
     
@@ -100,6 +104,7 @@ public class FileService {
                 String tempDir = "";
                 if("1".equals(fileUploadParam.getTemp())){
                     tempDir = FileDirMappingConfig.getDir("temp");
+                    fileUploadResult.setTemp("1");
                 }
                 upDir = upDir.replace("${temp}", tempDir+File.separator); // \home\storage\project_tmp\project_meme\2023\06\13\0~2 or \home\storage\project_meme\2023\06\13\0~2
 
@@ -121,10 +126,12 @@ public class FileService {
                         Integer value = entry.getValue();
                         this.resizeImage(upDir, serverFileName, inputImage, key,value,value);
                     }
+                    fileUploadResult.setResize("1");
                 }
                 //블러 이미지 제작
                 if(uploadResult && fileUploadParam.getBlur().equals("1")){
-                    
+                    this.blurImage(upDir, serverFileName, inputImage);
+                    fileUploadResult.setBlur("1");
                 }
 
                 if(uploadResult){
@@ -137,7 +144,7 @@ public class FileService {
                     fileUploadResult.setCode(RtnResult.FAIL.getCode());
                     fileUploadResult.setMessage(errMessage);
                 }
-
+                filesUploadRsp.addFileUploadResult(fileUploadResult);
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -201,8 +208,20 @@ public class FileService {
      * @작성자 : 정승주
      * @변경이력 : 
      **********************************************************************************************/
-    private void blurImage(String uploadDir, String serverFileName, BufferedImage inputImage){
+    private void blurImage(String uploadDir, String serverFileName, BufferedImage inputImage) throws IOException {
+        // Blur 효과를 위한 커널 생성
+        float[] matrix = new float[400];
+        for(int i=0; i<400; i++) matrix[i] = 1.0f / 400.0f;
 
+        Kernel kernel = new Kernel(20, 20, matrix); // 20x20 크기의 커널
+        BufferedImageOp blur = new ConvolveOp(kernel);//ConvolveOp 클래스를 사용하여 커널을 적용합니다.
+
+        BufferedImage blurredImage = new BufferedImage(inputImage.getWidth(), inputImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+        blur.filter(inputImage, blurredImage);
+        String[] splitted=serverFileName.split("\\.");
+        String outputFileName = splitted[0]+"_"+BLUR_ADD_NAME+"."+splitted[1];
+        File outputFile = new File(uploadDir, outputFileName);
+        ImageIO.write(blurredImage,"PNG", outputFile);
     }
 
     /**********************************************************************************************
