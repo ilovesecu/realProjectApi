@@ -211,10 +211,12 @@ public class FileService {
      * @작성자 : 정승주
      * @변경이력 : 
      **********************************************************************************************/
-    private void blurImage(String uploadDir, String serverFileName, BufferedImage inputImage){
+    private void blurImage(String uploadDir, String serverFileName, BufferedImage inputImage) throws IOException {
+        float[]matrix = new float[400];
+        for(int i=0; i<400;i++) matrix[i] = 1.0f/400.0f;
 
         Kernel kernel = new Kernel(20, 20, matrix); // 20x20 크기의 커널
-        BufferedImageOp blur = new ConvolveOp(kernel);//ConvolveOp 클래스를 사용하여 커널을 적용합니다.
+        BufferedImageOp blur = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);//ConvolveOp 클래스를 사용하여 커널을 적용합니다.
 
         BufferedImage blurredImage = new BufferedImage(inputImage.getWidth(), inputImage.getHeight(), BufferedImage.TYPE_INT_RGB);
         blur.filter(inputImage, blurredImage);
