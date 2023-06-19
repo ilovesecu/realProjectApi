@@ -9,6 +9,7 @@ import com.playground.real_project_api.file.val.SubType;
 import com.playground.real_project_api.file.vo.*;
 import com.playground.real_project_api.proc.RealProjectMapper;
 import com.playground.real_project_api.utils.EncryptionHelper;
+import com.playground.real_project_api.utils.file.BoxBlurFilter;
 import com.playground.real_project_api.utils.file.FileHelper;
 import com.playground.real_project_api.utils.random.RandomStringGenerator;
 import lombok.RequiredArgsConstructor;
@@ -124,7 +125,7 @@ public class FileService {
                 }
                 //블러 이미지 제작
                 if(uploadResult && fileUploadParam.getBlur().equals("1")){
-                    
+
                 }
 
                 if(uploadResult){
@@ -203,6 +204,24 @@ public class FileService {
      **********************************************************************************************/
     private void blurImage(String uploadDir, String serverFileName, BufferedImage inputImage){
 
+    }
+
+    /**********************************************************************************************
+     * @Method 설명 : 블러 이미지 VIEW할 때
+     * @작성일 : 2023-06-19
+     * @작성자 : 정승주
+     * @변경이력 :
+     **********************************************************************************************/
+    private void blurImageFromView(String uploadDir, String serverFileName, BufferedImage inputImage) throws IOException {
+        String[] splitted=serverFileName.split("\\.");
+        String blurImageName = splitted[0]+"_blur."+splitted[1];
+        File outputFile = new File(uploadDir,blurImageName);
+
+        int iterations = 65;
+        float hRadius = 1 / 0.7f;
+        BoxBlurFilter boxBlurFilter = new BoxBlurFilter(hRadius, hRadius, iterations);
+        BufferedImage blurPathBuffer = boxBlurFilter.filter(inputImage, null);
+        ImageIO.write(blurPathBuffer, "PNG", outputFile);
     }
 
     /**********************************************************************************************
