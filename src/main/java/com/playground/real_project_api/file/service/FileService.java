@@ -22,10 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -287,4 +284,35 @@ public class FileService {
 
         return dateMap;
     }
+
+    /**********************************************************************************************
+     * @Method 설명 : 업로드 도중 에러 파일 삭제하기
+     * @작성일 : 2023-06-19
+     * @작성자 : 정승주
+     * @변경이력 :
+     **********************************************************************************************/
+    public void errorFileDelete(String uploadDir, String serverFileName){
+        try{
+            this.fileDelete(uploadDir,serverFileName);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    
+    /********************************************************************************************** 
+     * @Method 설명 : 업로드 파일제거 공통 메서드
+     * @작성일 : 2023-06-19 
+     * @작성자 : 정승주
+     * @변경이력 : 
+     **********************************************************************************************/
+    private void fileDelete(String upDir, String fileName) throws IOException {
+        Path path = Paths.get(upDir, fileName);
+        if(Files.exists(path)){
+            Files.delete(path);
+        }else{
+            log.error("[fileDelete] - File Not Found! FileDirectory:{}, FileName:{}",upDir, fileName);
+            throw new FileNotFoundException("지정된 업로드 폴더 또는 파일이 존재하지 않습니다.");
+        }
+    }
+    
 }
