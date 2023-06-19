@@ -9,6 +9,7 @@ import com.playground.real_project_api.file.val.SubType;
 import com.playground.real_project_api.file.vo.*;
 import com.playground.real_project_api.proc.RealProjectMapper;
 import com.playground.real_project_api.utils.EncryptionHelper;
+import com.playground.real_project_api.utils.file.BoxBlurFilter;
 import com.playground.real_project_api.utils.file.FileHelper;
 import com.playground.real_project_api.utils.random.RandomStringGenerator;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.*;
 import java.nio.file.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -132,6 +134,7 @@ public class FileService {
                 if(uploadResult && fileUploadParam.getBlur().equals("1")){
                     this.blurImage(upDir, serverFileName, inputImage);
                     fileUploadResult.setBlur("1");
+
                 }
 
                 if(uploadResult){
@@ -208,10 +211,7 @@ public class FileService {
      * @작성자 : 정승주
      * @변경이력 : 
      **********************************************************************************************/
-    private void blurImage(String uploadDir, String serverFileName, BufferedImage inputImage) throws IOException {
-        // Blur 효과를 위한 커널 생성
-        float[] matrix = new float[400];
-        for(int i=0; i<400; i++) matrix[i] = 1.0f / 400.0f;
+    private void blurImage(String uploadDir, String serverFileName, BufferedImage inputImage){
 
         Kernel kernel = new Kernel(20, 20, matrix); // 20x20 크기의 커널
         BufferedImageOp blur = new ConvolveOp(kernel);//ConvolveOp 클래스를 사용하여 커널을 적용합니다.
@@ -222,6 +222,24 @@ public class FileService {
         String outputFileName = splitted[0]+"_"+BLUR_ADD_NAME+"."+splitted[1];
         File outputFile = new File(uploadDir, outputFileName);
         ImageIO.write(blurredImage,"PNG", outputFile);
+    }
+
+    /**********************************************************************************************
+     * @Method 설명 : 블러 이미지 VIEW할 때
+     * @작성일 : 2023-06-19
+     * @작성자 : 정승주
+     * @변경이력 :
+     **********************************************************************************************/
+    private void blurImageFromView(String uploadDir, String serverFileName, BufferedImage inputImage) throws IOException {
+        String[] splitted=serverFileName.split("\\.");
+        String blurImageName = splitted[0]+"_blur."+splitted[1];
+        File outputFile = new File(uploadDir,blurImageName);
+
+        int iterations = 65;
+        float hRadius = 1 / 0.7f;
+        BoxBlurFilter boxBlurFilter = new BoxBlurFilter(hRadius, hRadius, iterations);
+        BufferedImage blurPathBuffer = boxBlurFilter.filter(inputImage, null);
+        ImageIO.write(blurPathBuffer, "PNG", outputFile);
     }
 
     /**********************************************************************************************
@@ -287,4 +305,35 @@ public class FileService {
 
         return dateMap;
     }
+
+    /**********************************************************************************************
+     * @Method 설명 : 업로드 도중 에러 파일 삭제하기
+     * @작성일 : 2023-06-19
+     * @작성자 : 정승주
+     * @변경이력 :
+     **********************************************************************************************/
+    public void errorFileDelete(String uploadDir, String serverFileName){
+        try{
+            this.fileDelete(uploadDir,serverFileName);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    /**********************************************************************************************
+     * @Method 설명 : 업로드 파일제거 공통 메서드
+     * @작성일 : 2023-06-19
+     * @작성자 : 정승주
+     * @변경이력 :
+     **********************************************************************************************/
+    private void fileDelete(String upDir, String fileName) throws IOException {
+        Path path = Paths.get(upDir, fileName);
+        if(Files.exists(path)){
+            Files.delete(path);
+        }else{
+            log.error("[fileDelete] - File Not Found! FileDirectory:{}, FileName:{}",upDir, fileName);
+            throw new FileNotFoundException("지정된 업로드 폴더 또는 파일이 존재하지 않습니다.");
+        }
+    }
+
 }
