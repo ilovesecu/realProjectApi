@@ -5,12 +5,11 @@ import com.playground.real_project_api.file.val.SubType;
 import com.playground.real_project_api.file.vo.FileUploadBaseParam;
 import com.playground.real_project_api.file.vo.FileUploadParam;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
@@ -68,4 +67,18 @@ public class FileController {
 
         return null;
     }
+
+    @GetMapping(value = "/{type}/image/{encImageName}",
+                produces = {
+                        MediaType.IMAGE_PNG_VALUE,
+                        MediaType.IMAGE_JPEG_VALUE,
+                        MediaType.IMAGE_PNG_VALUE
+                }
+    )
+    public Object imageView(@PathVariable(value = "type")String type,
+                            @PathVariable(value = "encImageName")String encImageName,
+                            @RequestParam(value = "temp", required = false) boolean temp) throws IOException {
+        return fileService.getImageToByte(type, encImageName, temp);
+    }
+
 }

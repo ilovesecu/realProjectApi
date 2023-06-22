@@ -30,6 +30,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.*;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -132,9 +134,9 @@ public class FileService {
                 }
                 //블러 이미지 제작
                 if(uploadResult && fileUploadParam.getBlur().equals("1")){
-                    this.blurImage(upDir, serverFileName, inputImage);
+                    String blurImgName = this.blurImageFromView(upDir, serverFileName, inputImage);
                     fileUploadResult.setBlur("1");
-
+                    fileUploadResult.setBlurEncFileName(EncryptionHelper.encryptAES256(blurImgName));
                 }
 
                 if(uploadResult){
@@ -152,7 +154,7 @@ public class FileService {
                 e.printStackTrace();
             }
 
-        }
+        }// end of For
         return filesUploadRsp;
     }
 
@@ -232,7 +234,7 @@ public class FileService {
      * @작성자 : 정승주
      * @변경이력 :
      **********************************************************************************************/
-    private void blurImageFromView(String uploadDir, String serverFileName, BufferedImage inputImage) throws IOException {
+    private String blurImageFromView(String uploadDir, String serverFileName, BufferedImage inputImage) throws IOException {
         String[] splitted=serverFileName.split("\\.");
         String blurImageName = splitted[0]+"_blur."+splitted[1];
         File outputFile = new File(uploadDir,blurImageName);
@@ -242,6 +244,7 @@ public class FileService {
         BoxBlurFilter boxBlurFilter = new BoxBlurFilter(hRadius, hRadius, iterations);
         BufferedImage blurPathBuffer = boxBlurFilter.filter(inputImage, null);
         ImageIO.write(blurPathBuffer, "PNG", outputFile);
+        return blurImageName;
     }
 
     /**********************************************************************************************
@@ -295,16 +298,8 @@ public class FileService {
         dateMap.put("mm", splited[4]);
         dateMap.put("ss", splited[5]);
 
-        // 1~8:0 / 9~16:1 / 17~0:2
-        int hhIntVal = Integer.parseInt(splited[3]);
-        if(1 <= hhIntVal && hhIntVal <= 8){
-            dateMap.put("hhVal","0");
-        }else if(9 <= hhIntVal && hhIntVal <= 16){
-            dateMap.put("hhVal","1");
-        }else{
-            dateMap.put("hhVal","2");
-        }
-
+        String hhVal = this.getHhVal(splited[3]);
+        dateMap.put("hhVal",hhVal);
         return dateMap;
     }
 
@@ -337,5 +332,94 @@ public class FileService {
             throw new FileNotFoundException("지정된 업로드 폴더 또는 파일이 존재하지 않습니다.");
         }
     }
+
+    /**********************************************************************************************
+     * @Method 설명 : 이미지 파일 뷰
+     * @작성일 : 2023-06-22
+     * @작성자 : 정승주
+     * @변경이력 :
+     **********************************************************************************************/
+    public byte[] getImageToByte(String type, String encImageName, boolean isTemFile) throws IOException {
+        FileInputStream fileInputStream = null;
+        byte[] fileByte = null;
+        boolean blurFlag = false;
+
+        try{
+            String decFileName = EncryptionHelper.decryptAES256(encImageName);
+            decFileName = URLDecoder.decode(decFileName, String.valueOf(StandardCharsets.UTF_8));
+            log.warn("decFileName=>{}",decFileName);
+            String[] extDiv = decFileName.split("\\."); // [1_2023062213272848507_meme] [jpeg]
+            String[] memNoDiv = extDiv[0].split("\\_"); // [1] [2023062213272848507] [meme]
+            String extension = extDiv[1]; //확장자
+
+            Path uploadDir = this.makePathFromFileName(memNoDiv[1], type, isTemFile);
+            blurFlag = decFileName.contains("_blur");
+
+            File returnImgFile = new File(uploadDir.toFile(), decFileName);
+            if(returnImgFile.isFile()){
+                fileInputStream = new FileInputStream(returnImgFile);
+                fileByte = new byte[fileInputStream.available()];
+                fileInputStream.read(fileByte);
+            }else{
+                throw new FileNotFoundException(returnImgFile.getAbsolutePath()+"(을)를 찾을 수 없습니다.");
+            }
+        }catch (Exception e){
+            log.error("[getImageToByte] error occurred! e:",e);
+        }finally {
+            fileInputStream.close();
+        }
+
+        return fileByte;
+    }
+    
+    /********************************************************************************************** 
+     * @Method 설명 : 파일 이름으로 폴더명 알아내기
+     * @작성일 : 2023-06-22 
+     * @작성자 : 정승주
+     * @변경이력 : 
+     **********************************************************************************************/
+    private Path makePathFromFileName(String fileName, String type, boolean isTemp){
+        String tempDir = isTemp ? FileDirMappingConfig.getDir("temp") : "";
+        String typeDir = FileDirMappingConfig.getDir(type);
+        //ex = 2023062213272848507
+        String yyyy = fileName.substring(0,4);
+        String MM = fileName.substring(4,6);
+        String dd = fileName.substring(6,8);
+        String HH = fileName.substring(8,10);
+        String hhVal = this.getHhVal(HH);
+
+        Path filePath = Paths.get(uploadRootDir,tempDir,typeDir,yyyy,MM,dd,hhVal);
+        return filePath;
+    }
+
+    /**********************************************************************************************
+     * @Method 설명 : 시간대별 int값 반환
+     * @작성일 : 2023-06-22
+     * @작성자 : 정승주
+     * @변경이력 :
+     **********************************************************************************************/
+    private String getHhVal(String HH){
+        /*
+        // 1~8:0 / 9~16:1 / 17~0:2
+        int hhIntVal = Integer.parseInt(splited[3]);
+        if(1 <= hhIntVal && hhIntVal <= 8){
+            dateMap.put("hhVal","0");
+        }else if(9 <= hhIntVal && hhIntVal <= 16){
+            dateMap.put("hhVal","1");
+        }else{
+            dateMap.put("hhVal","2");
+        }*/
+
+        // 1~8:0 / 9~16:1 / 17~0:2
+        int hhIntVal = Integer.parseInt(HH);
+        if(1 <= hhIntVal && hhIntVal <= 8){
+            return "0";
+        }else if(9 <= hhIntVal && hhIntVal <= 16){
+            return "1";
+        }else{
+            return "2";
+        }
+    }
+
 
 }
