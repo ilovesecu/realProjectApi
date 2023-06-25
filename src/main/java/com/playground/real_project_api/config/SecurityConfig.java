@@ -28,7 +28,7 @@ public class SecurityConfig {
                     .antMatchers("/api/**").authenticated()
                     .antMatchers("/manager/**").hasAnyRole("MANAGER", "ADMIN") //인증 뿐 아니라 역할도 맞아야해.
                     .antMatchers("/admin/**").hasRole("ADMIN")
-                    .anyRequest().permitAll()
+                    .anyRequest().permitAll()//해당 URL이 아닌 곳은 모두 허용
                 )
         .addFilter(corsConfig.corsFilter()); //cors정책 설정 (CorsConfig 참고), @CrossOrigin은 인증이없을 때 사용, 인증이있을때는 시큐리티 필터에 등록 -> Authentication Filter 인증보다 앞에 필터를 추가해주어야 한다.
         return http.build();

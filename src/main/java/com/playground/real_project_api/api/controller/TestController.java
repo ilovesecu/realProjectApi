@@ -12,6 +12,11 @@ public class TestController {
 
     @GetMapping(value = "/api/test")
     public void test(){
-        mapper.test();
+        System.out.println("TeST");
+    }
+
+    @GetMapping(value = "/security")
+    public void secTest(){
+        System.out.println("Test succ");
     }
 }
