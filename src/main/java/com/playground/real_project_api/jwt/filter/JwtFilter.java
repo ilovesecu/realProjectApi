@@ -17,13 +17,19 @@ public class JwtFilter implements Filter {
 
         //토큰을 만들었다고 가정 (rpm 이라는 토큰)
         if(req.getMethod().equals("POST")){ //POST요청일 때만 동작
-
-        }else{
-            PrintWriter out = res.getWriter();
-            out.print("No Auth Token");
-            out.flush();
+            String headerAuth = req.getHeader("Authorization");
+            System.out.println(headerAuth);
+            if(headerAuth != null && headerAuth.equals("rpm")){
+                System.out.println("인증완료");
+                chain.doFilter(req,res); //필터체인에 등록해준다.
+            }else{
+                res.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                res.setContentType("text/plain;charset=UTF-8");
+                PrintWriter out = res.getWriter();
+                out.print("No Auth Token");
+                out.flush();
+                out.close();
+            }
         }
-
-        chain.doFilter(request,response);
     }
 }

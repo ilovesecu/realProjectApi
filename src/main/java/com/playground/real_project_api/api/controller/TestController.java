@@ -3,6 +3,7 @@ package com.playground.real_project_api.api.controller;
 import com.playground.real_project_api.proc.RealProjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -20,7 +21,7 @@ public class TestController {
         System.out.println("Test succ");
     }
 
-    @GetMapping(value = "/token")
+    @PostMapping(value = "/token")
     public String token(){
         return "<h1>toekn</h1>";
     }

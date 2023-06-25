@@ -10,7 +10,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.context.SecurityContextPersistenceFilter;
 
 @Configuration
 @EnableWebSecurity //스프링 필터체인에 등록
@@ -21,7 +23,9 @@ public class SecurityConfig {
     //https://spring.io/blog/2022/02/21/spring-security-without-the-websecurityconfigureradapter
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
-        http.addFilterBefore(new JwtFilter(), BasicAuthenticationFilter.class); //BasicAuthenticationFilter가 작동전에 JwtFilter가 작동하도록 설정
+        //UsernamePasswordAuthenticationFilter 작동전에 JwtFilter가 작동하도록 설정
+        //강의에서는 SecurityContextPersistenceFilter 작동전. 하지만 deprecated
+        http.addFilterBefore(new JwtFilter(), UsernamePasswordAuthenticationFilter.class);
         http.csrf().disable();
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)//세션을 사용X (STATELESS 전용)
                 .and()
