@@ -19,4 +19,9 @@ public class TestController {
     public void secTest(){
         System.out.println("Test succ");
     }
+
+    @GetMapping(value = "/token")
+    public String token(){
+        return "<h1>toekn</h1>";
+    }
 }
