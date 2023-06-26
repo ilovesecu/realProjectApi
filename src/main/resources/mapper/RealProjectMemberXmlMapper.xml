@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.playground.real_project_api.proc.RealProjectMemberMapper" >
+
+    <select id="getFullUserWithUserId" resultType="com.playground.real_project_api.auth.member.RpmMember" parameterType="java.lang.String">
+        SELECT
+            a.user_no AS userNo,
+            a.user_id AS userId,
+            a.login_type AS loginType,
+            b.password_id AS 'rpmAuthPassword.passwordId',
+            b.passwords AS 'rpmAuthPassword.passwords'
+        FROM rpm_member.basic a JOIN rpm_auth.password b ON a.user_no = b.user_no
+        WHERE user_id = #{userId};
+    </select>
+
+</mapper>
