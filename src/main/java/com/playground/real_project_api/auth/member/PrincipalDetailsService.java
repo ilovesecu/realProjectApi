@@ -31,6 +31,8 @@ public class PrincipalDetailsService implements UserDetailsService {
     // 그리고 시큐리티 세션에 Authentication이 쏙 들어간다. 그래서 UserDetailsService를 구현하는 것이다.
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        RpmMember rpmMember = realProjectMemberMapper.getFullUserWithUserId(username);
+        System.out.println(rpmMember);
         return null;
     }
 }

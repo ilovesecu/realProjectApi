@@ -1,10 +1,13 @@
 package com.playground.real_project_api.config;
 
+import com.playground.real_project_api.auth.jwt.filter.JwtAuthenticationFilter;
 import com.playground.real_project_api.auth.jwt.filter.JwtFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -23,7 +26,8 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
         //UsernamePasswordAuthenticationFilter 작동전에 JwtFilter가 작동하도록 설정
         //강의에서는 SecurityContextPersistenceFilter 작동전. 하지만 deprecated
-        http.addFilterBefore(new JwtFilter(), UsernamePasswordAuthenticationFilter.class);
+        //http.addFilter(new JwtAuthenticationFilter());
+        //http.addFilterBefore(new JwtFilter(), UsernamePasswordAuthenticationFilter.class);
         http.csrf().disable();
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)//세션을 사용X (STATELESS 전용)
                 .and()
@@ -44,6 +48,12 @@ public class SecurityConfig {
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer(){
         return (web -> web.ignoring().requestMatchers(PathRequest.toStaticResources().atCommonLocations()));
+    }
+
+    //authenticationManagerBean 대체
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception{
+        return authenticationConfiguration.getAuthenticationManager();
     }
 
 }
